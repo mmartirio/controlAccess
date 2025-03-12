@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script>
+        async function handleLogin(event) {
+            event.preventDefault(); // Evita que o formulário seja enviado de forma tradicional
+
+            // Obtém os dados do formulário
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Validação simples no frontend
+            if (username !== 'admin' || password !== 'admin123') {
+                alert("Usuário ou senha inválidos!");
+                return;
+            }
+
+            // Envia a requisição GET para o backend (API) com os dados como parâmetros na URL
+            const loginData = `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+
+            try {
+                // Envia a requisição GET com os dados na URL
+                const response = await fetch(`http://localhost:8080/api/employees?${loginData}`, {
+                    method: 'GET', // Usando GET
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                // Verifica a resposta da API
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Exibe a resposta JSON da API
+                    alert("Login bem-sucedido!");
+                    console.log(data); // Aqui você pode manipular a resposta da API como quiser
+
+                    // Aqui, você pode adicionar lógica para acessar as outras rotas
+                    await accessAdditionalRoutes();
+                } else {
+                    // Exibe erro se o login na API falhar
+                    alert(data.error || "Erro no login");
+                }
+            } catch (error) {
+                console.error('Erro ao fazer login:', error);
+                alert("Erro ao tentar realizar login. Tente novamente.");
+            }
+        }
+
+        // Função para acessar outras rotas (visitors, visits)
+        async function accessAdditionalRoutes() {
+            try {
+                // Acessa a rota visitors
+                const visitorsResponse = await fetch('http://localhost:8080/api/visitors');
+                const visitorsData = await visitorsResponse.json();
+                if (visitorsResponse.ok) {
+                    console.log("Dados de visitantes:", visitorsData);
+                } else {
+                    console.error("Erro ao acessar visitantes:", visitorsData.error);
+                }
+
+                // Acessa a rota visits
+                const visitsResponse = await fetch('http://localhost:8080/api/visits');
+                const visitsData = await visitsResponse.json();
+                if (visitsResponse.ok) {
+                    console.log("Dados de visitas:", visitsData);
+                } else {
+                    console.error("Erro ao acessar visitas:", visitsData.error);
+                }
+
+            } catch (error) {
+                console.error('Erro ao acessar outras rotas:', error);
+            }
+        }
+    </script>
+</head>
+<body>
+
+<h2>Login</h2>
+<form onsubmit="handleLogin(event)">
+    <label for="username">Usuário:</label>
+    <input type="text" id="username" name="username" required>
+    <br>
+    <label for="password">Senha:</label>
+    <input type="password" id="password" name="password" required>
+    <br>
+    <button type="submit">Entrar</button>
+</form>
+
+</body>
+</html>
