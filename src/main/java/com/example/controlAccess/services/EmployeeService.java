@@ -3,6 +3,7 @@ package com.example.controlAccess.services;
 import com.example.controlAccess.dtos.EmployeeDTO;
 import com.example.controlAccess.models.EmployeeModel;
 import com.example.controlAccess.repositories.EmployeeRepository;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -125,5 +126,11 @@ public class EmployeeService {
             return true;
         }
         return false;
+    }
+
+    // Método para buscar funcionário pelo username
+    public EmployeeModel findByUsername(@NotBlank(message = "Nome de usuário não pode ser vazio") String username) {
+        Optional<EmployeeModel> employee = employeeRepository.findByUsername(username);
+        return employee.orElse(null); // Retorna o funcionário ou null se não encontrado
     }
 }
