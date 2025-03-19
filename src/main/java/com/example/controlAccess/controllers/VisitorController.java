@@ -8,8 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
-
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,36 +20,38 @@ public class VisitorController {
     private VisitorService visitorService;
 
     // Endpoint para criar um visitante
-    @PostMapping
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<VisitorDTO> createVisitor(@Valid @RequestBody VisitorDTO visitorDTO) {
-        try {
-            // Foto já está no formato Base64 no DTO, não precisa converter mais
-            String photoBase64 = visitorDTO.photo();  // Assumindo que o campo "photo" no DTO já é uma string base64
+        // Verificação da foto
+        if (visitorDTO.photo() == null || visitorDTO.photo().isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // Foto obrigatória
+        }
 
-            // Convertendo o DTO para VisitorModel
+        try {
+            // Criando e salvando o visitante
             VisitorModel visitorModel = new VisitorModel();
             visitorModel.setName(visitorDTO.name());
             visitorModel.setSurName(visitorDTO.surName());
             visitorModel.setRg(visitorDTO.rg());
             visitorModel.setPhone(visitorDTO.phone());
-            visitorModel.setPhoto(photoBase64);  // Definindo a foto diretamente
+            visitorModel.setPhoto(visitorDTO.photo()); // Foto já está em Base64
 
-            // Chamando o serviço para salvar o visitante
             VisitorModel savedVisitor = visitorService.createVisitor(visitorModel);
 
-            // Convertendo o modelo salvo para DTO
+            // Convertendo para DTO de resposta
             VisitorDTO savedVisitorDTO = new VisitorDTO(
                     savedVisitor.getId(),
                     savedVisitor.getName(),
                     savedVisitor.getSurName(),
                     savedVisitor.getRg(),
                     savedVisitor.getPhone(),
-                    savedVisitor.getPhoto() // Foto como base64
+                    savedVisitor.getPhoto()
             );
 
             return new ResponseEntity<>(savedVisitorDTO, HttpStatus.CREATED);
 
         } catch (Exception e) {
+            // Retorna uma resposta de erro genérico
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -60,18 +60,16 @@ public class VisitorController {
     @GetMapping("/{id}")
     public ResponseEntity<VisitorDTO> getVisitorById(@PathVariable Long id) {
         Optional<VisitorModel> visitor = visitorService.getVisitorById(id);
-        return visitor.map(value -> {
-            // Convertendo o modelo para DTO
-            VisitorDTO visitorDTO = new VisitorDTO(
-                    value.getId(),
-                    value.getName(),
-                    value.getSurName(),
-                    value.getRg(),
-                    value.getPhone(),
-                    value.getPhoto() // Foto como base64
-            );
-            return new ResponseEntity<>(visitorDTO, HttpStatus.OK);
-        }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
+        // Retorna o visitante encontrado ou uma resposta de erro
+        return visitor.map(value -> new ResponseEntity<>(new VisitorDTO(
+                value.getId(),
+                value.getName(),
+                value.getSurName(),
+                value.getRg(),
+                value.getPhone(),
+                value.getPhoto() // Foto já está em Base64
+        ), HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     // Endpoint para buscar todos os visitantes
@@ -82,17 +80,15 @@ public class VisitorController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        // Convertendo os modelos para DTOs
-        List<VisitorDTO> visitorDTOs = visitors.stream().map(visitor -> {
-            return new VisitorDTO(
-                    visitor.getId(),
-                    visitor.getName(),
-                    visitor.getSurName(),
-                    visitor.getRg(),
-                    visitor.getPhone(),
-                    visitor.getPhoto() // Foto como base64
-            );
-        }).collect(Collectors.toList());
+        // Mapeando os visitantes para o formato de DTO
+        List<VisitorDTO> visitorDTOs = visitors.stream().map(visitor -> new VisitorDTO(
+                visitor.getId(),
+                visitor.getName(),
+                visitor.getSurName(),
+                visitor.getRg(),
+                visitor.getPhone(),
+                visitor.getPhoto()
+        )).collect(Collectors.toList());
 
         return new ResponseEntity<>(visitorDTOs, HttpStatus.OK);
     }
@@ -100,34 +96,33 @@ public class VisitorController {
     // Endpoint para atualizar um visitante
     @PutMapping("/{id}")
     public ResponseEntity<VisitorDTO> updateVisitor(@PathVariable Long id, @Valid @RequestBody VisitorDTO visitorDTO) {
-        try {
-            // Foto já está no formato Base64 no DTO, não precisa converter mais
-            String photoBase64 = visitorDTO.photo();  // Assumindo que o campo "photo" no DTO já é uma string base64
+        // Verificação da foto
+        if (visitorDTO.photo() == null || visitorDTO.photo().isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // Foto obrigatória
+        }
 
-            // Convertendo o DTO para VisitorModel
+        try {
             VisitorModel visitorModel = new VisitorModel();
             visitorModel.setId(id);
             visitorModel.setName(visitorDTO.name());
             visitorModel.setSurName(visitorDTO.surName());
             visitorModel.setRg(visitorDTO.rg());
             visitorModel.setPhone(visitorDTO.phone());
-            visitorModel.setPhoto(photoBase64);  // Definindo a foto diretamente
+            visitorModel.setPhoto(visitorDTO.photo()); // Foto já está em Base64
 
             Optional<VisitorModel> updatedVisitor = visitorService.updateVisitor(id, visitorModel);
 
-            return updatedVisitor.map(value -> {
-                // Convertendo o modelo atualizado para DTO
-                VisitorDTO visitorDTOResponse = new VisitorDTO(
-                        value.getId(),
-                        value.getName(),
-                        value.getSurName(),
-                        value.getRg(),
-                        value.getPhone(),
-                        value.getPhoto() // Foto como base64
-                );
-                return new ResponseEntity<>(visitorDTOResponse, HttpStatus.OK);
-            }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            // Retorna o visitante atualizado ou um erro caso não seja encontrado
+            return updatedVisitor.map(value -> new ResponseEntity<>(new VisitorDTO(
+                    value.getId(),
+                    value.getName(),
+                    value.getSurName(),
+                    value.getRg(),
+                    value.getPhone(),
+                    value.getPhoto()
+            ), HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
         } catch (Exception e) {
+            // Retorna uma resposta de erro genérico
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -136,6 +131,8 @@ public class VisitorController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVisitor(@PathVariable Long id) {
         boolean isDeleted = visitorService.deleteVisitor(id);
+
+        // Retorna sucesso ou erro caso não encontrado
         return isDeleted ? new ResponseEntity<>(HttpStatus.NO_CONTENT) :
                 new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }

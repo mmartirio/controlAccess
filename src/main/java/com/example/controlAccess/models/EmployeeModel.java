@@ -16,6 +16,10 @@ import java.util.Collections;
 @Entity
 public class EmployeeModel extends UserModel implements UserDetails {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)  // Isso vai gerar o ID automaticamente para UserModel e suas subclasses
+    private Long id;
+
     @Column(unique = true)
     private String username;
 

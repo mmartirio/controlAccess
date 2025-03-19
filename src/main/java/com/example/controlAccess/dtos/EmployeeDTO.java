@@ -9,9 +9,6 @@ import jakarta.validation.constraints.Size;
 public record EmployeeDTO(
         Long id,
 
-        @NotBlank(message = "Nome de usuário não pode ser vázio")
-        String username,
-
         @NotBlank(message = "Nome não pode ser vazio")
         @Size(min = 2, max = 50, message = "O nome deve ter entre 2 e 50 caracteres")
         String name,
@@ -19,6 +16,13 @@ public record EmployeeDTO(
         @NotBlank(message = "Sobrenome não pode ser vazio")
         @Size(min = 2, max = 50, message = "O sobrenome deve ter entre 2 e 50 caracteres")
         String surName,
+
+        @NotBlank(message = "Nome de usuário não pode ser vázio")
+        String username,
+
+        @NotBlank(message = "RG não pode ser vázio")
+        String rg,
+
 
         @NotBlank(message = "Email não pode ser vazio")
         @Email(message = "Email inválido")
