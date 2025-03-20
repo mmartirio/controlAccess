@@ -43,7 +43,6 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Sem sessão
                 .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()));  // Usando a configuração CORS
-
         return http.build();
     }
 
@@ -73,3 +72,4 @@ public class SecurityConfig {
         return new ProviderManager(List.of(authProvider));
     }
 }
+

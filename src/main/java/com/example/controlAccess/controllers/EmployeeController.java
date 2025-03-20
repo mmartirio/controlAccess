@@ -74,6 +74,17 @@ public class EmployeeController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
-        return employeeService.deleteEmployee(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        try {
+            boolean isDeleted = employeeService.deleteEmployee(id);
+            if (isDeleted) {
+                return ResponseEntity.noContent().build();  // Deletado com sucesso
+            } else {
+                return ResponseEntity.notFound().build();  // Funcionário não encontrado
+            }
+        } catch (Exception e) {
+            // Caso haja algum erro no processo de exclusão
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
+
 }
