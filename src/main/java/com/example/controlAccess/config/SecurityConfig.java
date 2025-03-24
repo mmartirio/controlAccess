@@ -12,11 +12,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -24,26 +28,43 @@ import java.util.List;
 public class SecurityConfig {
 
     private final EmployeeRepository employeeRepository;
-    private final CorsConfig corsConfig; // Injeção de dependência do CorsConfig
 
-    public SecurityConfig(EmployeeRepository employeeRepository, CorsConfig corsConfig) {
+    public SecurityConfig(EmployeeRepository employeeRepository) {
         this.employeeRepository = employeeRepository;
-        this.corsConfig = corsConfig; // Configuração CORS sendo injetada
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())  // Desabilita CSRF para APIs sem sessão
+                .csrf(csrf -> csrf.disable())  // Desabilita CSRF para APIs stateless
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Configuração CORS
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/auth/login", "/api/employees/**", "/api/visitors/**", "/api/visits/**").permitAll()  // Permite acesso sem autenticação
-                        .requestMatchers("/admin").hasAuthority("ADMIN")  // Restringe para usuários com role ADMIN
-                        .requestMatchers("/user").authenticated()  // Qualquer usuário autenticado pode acessar
-                        .anyRequest().authenticated()  // Outras rotas exigem autenticação
+                        .requestMatchers(
+                                "/auth/**",
+                                "/api/employees/**",
+                                "/api/visitors/**",
+                                "/api/visits/**"
+                        ).permitAll()  // Rotas públicas
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN")  // Apenas ADMIN
+                        .anyRequest().authenticated()  // Demais rotas exigem autenticação
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Sem sessão
-                .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()));  // Usando a configuração CORS
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));  // API stateless
+
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));  // Frontend
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
+        configuration.setAllowCredentials(true);  // Permite cookies/tokens
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);  // Aplica a todas as rotas
+        return source;
     }
 
     @Bean
@@ -54,22 +75,25 @@ public class SecurityConfig {
 
             return User.withUsername(employee.getUsername())
                     .password(employee.getPassword())
-                    .authorities("ROLE_" + employee.getRole().name())  // Adiciona prefixo ROLE_ para garantir que a autoridade seja reconhecida
+                    .authorities("ROLE_" + employee.getRole().name())
                     .build();
         };
     }
 
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();  // Cria o codificador de senha BCrypt
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    public AuthenticationManager authenticationManager(
+            UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder
+    ) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder);
+
         return new ProviderManager(List.of(authProvider));
     }
-}
-
+}34

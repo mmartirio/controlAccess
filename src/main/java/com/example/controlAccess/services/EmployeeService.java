@@ -117,20 +117,22 @@ public class EmployeeService {
         return employeeOptional.map(this::convertToDTO).orElse(null);
     }
 
-    // Método para deletar um funcionário
+    // Método para buscar funcionário pelo username
+    public EmployeeModel findByUsername(@NotBlank(message = "Nome de usuário não pode ser vazio") String username) {
+        Optional<EmployeeModel> employee = employeeRepository.findByUsername(username);
+        return employee.orElse(null); // Retorna o funcionário ou null se não encontrado
+    }
+
     public boolean deleteEmployee(Long id) {
         Optional<EmployeeModel> employeeOptional = employeeRepository.findById(id);
 
         if (employeeOptional.isPresent()) {
             employeeRepository.deleteById(id);
+            System.out.println("Funcionário com ID " + id + " deletado com sucesso.");
             return true;
+        } else {
+            System.out.println("Funcionário com ID " + id + " não encontrado.");
         }
         return false;
-    }
-
-    // Método para buscar funcionário pelo username
-    public EmployeeModel findByUsername(@NotBlank(message = "Nome de usuário não pode ser vazio") String username) {
-        Optional<EmployeeModel> employee = employeeRepository.findByUsername(username);
-        return employee.orElse(null); // Retorna o funcionário ou null se não encontrado
     }
 }

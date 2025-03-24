@@ -3,6 +3,7 @@ package com.example.controlAccess.repositories;
 import com.example.controlAccess.models.EmployeeModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface EmployeeRepository extends JpaRepository<EmployeeModel, Long> {
 
-    // Native Query para buscar funcionário pelo email, retornando um Optional
+    // Native Query para buscar funcionário pelo username, retornando um Optional
     @Query(value = "SELECT * FROM employee_model WHERE username = ?1", nativeQuery = true)
     Optional<EmployeeModel> findByUsername(String Username);
 

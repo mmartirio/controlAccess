@@ -2,7 +2,7 @@ package com.example.controlAccess.config;
 
 import com.example.controlAccess.models.EmployeeModel;
 import com.example.controlAccess.repositories.EmployeeRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 
@@ -12,20 +12,18 @@ import java.util.Optional;
 public class AdminInitializer {
 
     private final EmployeeRepository employeeRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    // Construtor para injeção de dependências
-    public AdminInitializer(EmployeeRepository employeeRepository, BCryptPasswordEncoder passwordEncoder) {
+    public AdminInitializer(EmployeeRepository employeeRepository,
+                            PasswordEncoder passwordEncoder) {
         this.employeeRepository = employeeRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Este método será chamado automaticamente após o contexto ser iniciado
     @PostConstruct
     public void createAdminUser() {
-        String adminUsername = "admin"; // username é o campo que representa o email
+        String adminUsername = "admin";
 
-        // Verifica se o administrador já existe no banco de dados
         Optional<EmployeeModel> existingAdmin = employeeRepository.findByUsername(adminUsername);
 
         if (existingAdmin.isEmpty()) {
@@ -37,9 +35,9 @@ public class AdminInitializer {
             admin.setSurName("Sistema");
             admin.setRg("000000000");
             admin.setPhone("00000000000");
-            admin.setEmail("admin@example.com"); // email associado ao username
-            admin.setPassword(passwordEncoder.encode("admin123")); // Senha criptografada
-            admin.setRole(EmployeeModel.Role.ROLE_ADMIN); // Enum correto
+            admin.setEmail("admin@example.com");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setRole(EmployeeModel.Role.ROLE_ADMIN);
             admin.setAccountNonExpired(true);
             admin.setAccountNonLocked(true);
             admin.setCredentialsNonExpired(true);
@@ -48,7 +46,7 @@ public class AdminInitializer {
             employeeRepository.save(admin);
             System.out.println("Usuário administrador criado com sucesso!");
         } else {
-            System.out.println("Usuário administrador já existe, nenhuma ação necessária.");
+            System.out.println("Usuário administrador já existe.");
         }
     }
 }
