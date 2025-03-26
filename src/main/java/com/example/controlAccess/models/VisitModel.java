@@ -6,7 +6,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import java.time.LocalDate;
+
+import java.time.ZonedDateTime;
+
 
 @Entity
 public class VisitModel {
@@ -17,17 +19,14 @@ public class VisitModel {
 
     private String visitReason;
     private String sector;
-    private LocalDate visitDate = LocalDate.now();
+    private ZonedDateTime visitDate = ZonedDateTime.now();
+    private String responsibleName; // Novo campo para o nome do responsável
 
-    // Associação Many-to-One com VisitorModel
+    // Associação Many-to-One com VisitorModel (mantida)
     @ManyToOne
     @JoinColumn(name = "visitor_id", referencedColumnName = "id")
     private VisitorModel visitor;
 
-    // Associação Many-to-One com EmployeeModel
-    @ManyToOne
-    @JoinColumn(name = "employee_id", referencedColumnName = "id")
-    private EmployeeModel employee;
 
     // Getters e Setters
     public Long getId() {
@@ -54,11 +53,11 @@ public class VisitModel {
         this.sector = sector;
     }
 
-    public LocalDate getVisitDate() {
+    public ZonedDateTime getVisitDate() {
         return visitDate;
     }
 
-    public void setVisitDate(LocalDate visitDate) {
+    public void setVisitDate(ZonedDateTime visitDate) {
         this.visitDate = visitDate;
     }
 
@@ -70,12 +69,12 @@ public class VisitModel {
         this.visitor = visitor;
     }
 
-    public EmployeeModel getEmployee() {
-        return employee;
+    public String getResponsibleName() {
+        return responsibleName;
     }
 
-    public void setEmployee(EmployeeModel employee) {
-        this.employee = employee;
+    public void setResponsibleName(String responsibleName) {
+        this.responsibleName = responsibleName;
     }
 
     // Métodos auxiliares para obter id, nome e sobrenome do visitante

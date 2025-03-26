@@ -1,26 +1,51 @@
 version: '3.8'
+
 services:
-  mysql:
+  mysql_db:
     image: mysql:8.0
-    container_name: mysql_controlaccess
+    container_name: mysql_control_access
     environment:
       MYSQL_ROOT_PASSWORD: Kraus@8770
-      MYSQL_DATABASE: controlaccess_db
+      MYSQL_DATABASE: control_access_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: App@Password123
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
-      - db_data:/var/lib/mysql
-  backend:
-    build: ./backend
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pKraus@8770"]
+      interval: 10s
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  control_access_app:
+    build: .
+    container_name: control_access_app
     ports:
       - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db:3306/control_access_db?useSSL=false&allowPublicKeyRetrieval=true&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
+      SPRING_DATASOURCE_USERNAME: app_user
+      SPRING_DATASOURCE_PASSWORD: App@Password123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
     depends_on:
-      - mysql
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
+      mysql_db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
 volumes:
-  db_data:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge
