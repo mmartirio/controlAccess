@@ -1,6 +1,5 @@
 package com.example.controlAccess.dtos;
 
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,7 +19,6 @@ public record VisitDTO(
         String sector,
 
         @NotNull(message = "Data da visita é obrigatória")
-        @FutureOrPresent(message = "Data da visita deve ser atual ou futura")
         ZonedDateTime visitDate,
 
         // Informações mínimas necessárias do visitante
