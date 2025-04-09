@@ -1,0 +1,92 @@
+# ControlAccess
+
+ControlAccess é um sistema de gerenciamento de controle de acesso desenvolvido com Java Spring Boot. Ele permite gerenciar visitantes, funcionários e visitas, com autenticação e autorização baseadas em JWT.
+
+## Estrutura do Projeto
+
+O projeto segue a estrutura padrão do Spring Boot, com os seguintes diretórios principais:
+
+- `src/main/java`: Contém o código-fonte principal, incluindo modelos, serviços, controladores e repositórios.
+- `src/main/resources`: Contém arquivos de configuração e recursos estáticos.
+- `src/test/java`: Contém os testes unitários.
+- `docker-compose.yml`: Configuração para execução do projeto com Docker.
+- `Dockerfile`: Configuração para criação da imagem Docker do aplicativo.
+
+## Pré-requisitos
+
+Antes de começar, certifique-se de ter os seguintes softwares instalados:
+
+- [Java 21](https://jdk.java.net/21/)
+- [Maven](https://maven.apache.org/)
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
+
+## Instalação
+
+1. Clone o repositório:
+
+   ```bash
+   git clone https://github.com/seu-usuario/controlAccess.git
+   cd controlAccess
+   ```
+
+2. Configure o banco de dados MySQL no arquivo `docker-compose.yml` ou no arquivo `application.properties` em `src/main/resources`.
+
+3. Compile o projeto com Maven:
+
+   ```bash
+   ./mvnw clean install
+   ```
+
+4. Inicie os serviços com Docker Compose:
+
+   ```bash
+   docker-compose up --build
+   ```
+
+   Isso iniciará o banco de dados MySQL e o aplicativo Spring Boot.
+
+5. O aplicativo estará disponível em `http://localhost:8080`.
+
+## Uso
+
+### Endpoints Principais
+
+- **Autenticação**
+  - `POST /auth/login`: Realiza o login e retorna um token JWT.
+  - `GET /auth/employee/{username}`: Retorna a role do usuário autenticado.
+
+- **Funcionários**
+  - `GET /api/employees`: Lista todos os funcionários (somente para administradores).
+  - `POST /api/employees`: Cria um novo funcionário (somente para administradores).
+
+- **Visitantes**
+  - `GET /api/visitors/all`: Lista todos os visitantes.
+  - `POST /api/visitors`: Cria um novo visitante.
+
+- **Visitas**
+  - `GET /api/visits`: Lista todas as visitas.
+  - `POST /api/visits`: Cria uma nova visita.
+
+### Login Padrão
+
+Um usuário administrador padrão é criado automaticamente ao iniciar o aplicativo:
+
+- **Usuário:** `admin`
+- **Senha:** `admin123`
+
+### Frontend
+
+O arquivo  loginde estático pode ser acessado em `http://localhost:8080/login.html`.
+
+## Testes
+
+Para executar os testes, use o comando:
+
+```bash
+./mvnw test
+```
+
+## Licença
+
+Este projeto está licenciado sob a licença Apache 2.0. Consulte o arquivo [LICENSE](https://www.apache.org/licenses/LICENSE-2.0) para mais detalhes.
