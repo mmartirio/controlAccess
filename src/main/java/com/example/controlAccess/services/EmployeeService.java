@@ -50,9 +50,10 @@ public class EmployeeService {
         EmployeeModel employee = new EmployeeModel();
         employee.setName(employeeDTO.name());
         employee.setSurName(employeeDTO.surName());
+        employee.setUsername(employeeDTO.username());
         employee.setEmail(employeeDTO.email());
         employee.setPhone(employeeDTO.phone());
-        employee.setPassword(encodedPassword);  // Senha já codificada
+        employee.setPassword(encodedPassword);
         employee.setRole(employeeDTO.role());
         employee.setAccountNonExpired(employeeDTO.accountNonExpired());
         employee.setAccountNonLocked(employeeDTO.accountNonLocked());
